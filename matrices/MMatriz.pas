@@ -17,9 +17,10 @@ type
     function Transpuesta(A: matriz;n,m:integer):matriz;
     function Traza(A: matriz;n,m:integer):real;
     function Determinante(A: matriz;filas,col:integer):real;
-    function cof(matrizz:matriz;r,c:integer):real;
+    function cof(matrizz:matriz;r,c:integer):matriz;
     function Inversa(A:matriz; det: real; dim:integer): matriz;
     procedure Print(a: matriz; n,m:integer);
+    //potencia, division(a/b = a*b(inve)), triangularizacion(gauss jordan)
     //INVERSA APARTE
     constructor create();
     destructor destroy();
@@ -183,38 +184,56 @@ begin
 
 end;
 
-function TMatriz.cof(matrizz:matriz;r,c:integer):real ;
+function TMatriz.cof(matrizz:matriz;r,c:integer): matriz ;
     var
     dim:integer;
-  i,j,i1,j1: integer;
-  MT: matriz;
+  i,j,i1,j1,a,b, a_factor, b_factor: integer;
+  mat_temp, ret, le_mat: matriz;
 begin
-   dim:=3;
-  i1:=0; j1:=0;
-  for i:=0 to dim-1 do begin
-   for j:=0 to dim-1 do begin
-     if (i<>r) and (j<>c) then begin
-         MT[i1,j1]:= matrizz[i,j];
-         j1:= j1+1;
-         if(j1>=(dim-1)) then begin
-             i1:=i1+1;
-             j1:=0;
-         end;
-     end;
+   for i:=0 to c-1 do
+   begin
+        for j:=0 to r-1 do
+             mat_temp[i,j]:= matrizz[i,j];
    end;
-  end;
-  Result:= (Power(-1,i+j))*determinante(MT,dim,dim);
+   for i:=0 to c-1 do
+   begin
+        for j:=0 to r-1 do
+        begin
+             a_factor:=0;
+             for a:=0 to c-1 do
+             begin
+                  b_factor:=0;
+                  if(a=i) then
+                     begin
+                          a_factor:=1;
+                          continue;
+                     end;
+                  for b:=0 to r-1 do
+                  begin
+                       if(b=j) then
+                          begin
+                               b_factor :=1;
+                               continue;
+                          end;
+                       le_mat[a-a_factor, b-b_factor] := mat_temp[a,b];
+                  end;
+             end;
+             ret[i,j] := power(-1, i-j-2)* determinante(le_mat, r-1, c-1);
+        end;
+   end;
+  Result:= ret;
 end;
 
 function TMatriz.Inversa(A:matriz; det: real; dim:integer): matriz;
  var
   i,j: integer;
-  res:matriz;
+  res, m_cof:matriz;
 begin
+  m_cof:=cof(A,dim,dim);
   for i:=0 to dim-1 do //fil
-    for j:=0 to dim-1 do//col
-      res[i,j]:= Cof(A,i,j)/det;
-
+    for j:=0 to dim-1 do begin//col
+      res[i,j]:= m_cof[i,j]/det;
+     end;
   res:= Transpuesta(res,dim,dim);
   result:=res;
 end;
@@ -265,9 +284,9 @@ begin
   mat1.Mult(matriz2,matriz3,3,3,3);
   writeln('mult');
   mat1.print(mat1.Mult(matriz2,matriz3,3,3,3),3,3);  }
-  mat1.Inversa(matriz2, det, 3);
-   mat1.print( mat1.Inversa(matriz2, det, 3),3,3);
+  writeln('inv');
+  mat1.inversa(matriz2,det,3);
+   mat1.print( mat1.inversa(matriz2, det,3),3,3);
 
   readln();
 end.
-     
